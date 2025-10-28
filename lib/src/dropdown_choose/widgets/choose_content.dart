@@ -161,13 +161,15 @@ class _ChooseContentState<T> extends State<ChooseContent<T>> {
   }
 
   // 远程搜索
-  Future<void> _handleRemoteFetch() async {
+  Future<void> _handleRemoteFetch({String? keyword}) async {
     if (!widget.remote || widget.remoteSearch == null) return;
-    final keyword = _searchController.text.trim();
+
+    // 如果没有传入关键字，从搜索控制器获取
+    final searchKeyword = keyword ?? _searchController.text.trim();
 
     setState(() => _isLoading = true);
     try {
-      final list = await widget.remoteSearch!.call(keyword);
+      final list = await widget.remoteSearch!.call(searchKeyword);
       setState(() {
         // 直接使用搜索结果，不添加额外的已选中项目
         _dataList = List<SelectData<T>>.from(list);
@@ -179,7 +181,7 @@ class _ChooseContentState<T> extends State<ChooseContent<T>> {
       });
 
       // 将搜索结果缓存到父组件（特别是空关键字的初始搜索结果）
-      if (keyword.isEmpty && widget.onCacheUpdate != null) {
+      if (searchKeyword.isEmpty && widget.onCacheUpdate != null) {
         widget.onCacheUpdate!(list);
       }
     } catch (e) {
@@ -242,9 +244,9 @@ class _ChooseContentState<T> extends State<ChooseContent<T>> {
               isLoading: _isLoading,
               controller: _searchController,
               hintText: widget.remote ? '请输入关键字搜索' : '请输入关键字筛选',
-              remoteFetch: _handleRemoteFetch,
+              remoteFetch: () => _handleRemoteFetch(keyword: _searchController.text.trim()),
               onChanged: (kw) => _handleLocalFilter(kw),
-              onSubmitted: (_) => _handleRemoteFetch(),
+              onSubmitted: (value) => _handleRemoteFetch(keyword: value),
               onClear: () => _handleLocalFilter(''),
             ),
           // 选项列表
@@ -270,15 +272,17 @@ class _ChooseContentState<T> extends State<ChooseContent<T>> {
                                     onTap: () async {
                                       final String kw = _searchController.text.trim();
                                       final bool? ok = await widget.onAdd?.call(kw);
+                                      // 新增成功刷新列表（触发一次搜索）
                                       if (ok == true) {
-                                        await _handleRemoteFetch();
+                                        await _handleRemoteFetch(keyword: kw);
                                       }
                                     },
                                     child: OnAdd(
                                       onAdd: (String innerKw) async {
                                         final bool? ok = await widget.onAdd?.call(innerKw);
+                                        // 新增成功刷新列表（触发一次搜索）
                                         if (ok == true) {
-                                          await _handleRemoteFetch();
+                                          await _handleRemoteFetch(keyword: innerKw);
                                         }
                                       },
                                       kw: _searchController.text.trim(),

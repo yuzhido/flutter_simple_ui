@@ -10,6 +10,17 @@ class SelectData<T> {
 
   const SelectData({required this.label, required this.value, this.disabled = false, this.hasChildren = false, this.children, required this.data});
 
+  // 创建带子节点的新实例
+  SelectData<T> copyWith({String? label, dynamic value, T? data, bool? hasChildren, List<SelectData<T>>? children}) {
+    return SelectData(
+      label: label ?? this.label,
+      value: value ?? this.value,
+      data: data ?? this.data,
+      hasChildren: hasChildren ?? this.hasChildren,
+      children: children ?? this.children,
+    );
+  }
+
   /// 转换为JSON
   Map<String, dynamic> toJson() {
     return {'label': label, 'value': value, 'hasChildren': hasChildren, 'disabled': disabled, 'children': children?.map((child) => child.toJson()).toList(), 'data': data};

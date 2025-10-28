@@ -196,6 +196,10 @@ class _TreeSelectState<T> extends State<TreeSelect<T>> {
       // 如果当前项匹配或有匹配的子项，则包含此项
       if (currentMatches || (filteredChildren != null && filteredChildren.isNotEmpty)) {
         result.add(SelectData<T>(label: item.label, value: item.value, data: item.data, hasChildren: item.hasChildren, children: filteredChildren ?? item.children));
+        // 如果有匹配的子项，自动展开当前节点
+        if (filteredChildren != null && filteredChildren.isNotEmpty) {
+          expandedItems.add(item.value);
+        }
       }
     }
 
@@ -213,7 +217,7 @@ class _TreeSelectState<T> extends State<TreeSelect<T>> {
             _expandToSelectedValue();
           }
         } else {
-          // 有搜索关键字时，清除展开状态并过滤数据
+          // 有搜索关键字时，先清除展开状态，然后过滤数据（过滤过程中会自动展开匹配项）
           expandedItems.clear();
           filteredDataList = _filterLocalData(dataList, keyword);
         }
