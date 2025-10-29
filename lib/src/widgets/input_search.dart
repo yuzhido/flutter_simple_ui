@@ -6,7 +6,7 @@ class InputSearch extends StatefulWidget {
   final bool isLoading;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
-  final VoidCallback? remoteFetch;
+  final Function()? remoteFetch;
   final VoidCallback? onClear;
   final TextEditingController? controller;
   final String? hintText;
@@ -116,7 +116,17 @@ class _InputSearchState extends State<InputSearch> {
             SizedBox(
               height: 45,
               child: ElevatedButton.icon(
-                onPressed: widget.isLoading ? null : widget.remoteFetch,
+                onPressed: widget.isLoading
+                    ? null
+                    : () async {
+                        // 先收起键盘
+                        focusNode.unfocus();
+                        FocusManager.instance.primaryFocus?.unfocus();
+                        // 等待键盘完全隐藏（通常需要200-300ms）这个问题这样解决不是太妙，有待优化
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        // 然后执行搜索，传递当前输入框的文本
+                        widget.remoteFetch?.call();
+                      },
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 15),
                   backgroundColor: widget.isLoading ? Colors.grey[300] : const Color(0xFF007AFF),
