@@ -123,7 +123,7 @@ class _InputSearchState extends State<InputSearch> {
                         focusNode.unfocus();
                         FocusManager.instance.primaryFocus?.unfocus();
                         // 等待键盘完全隐藏（通常需要200-300ms）这个问题这样解决不是太妙，有待优化
-                        await Future.delayed(const Duration(milliseconds: 150));
+                        await Future.delayed(const Duration(milliseconds: 300));
                         // 然后执行搜索，传递当前输入框的文本
                         widget.remoteFetch?.call();
                       },
