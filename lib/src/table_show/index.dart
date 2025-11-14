@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 
-class TableShow extends StatelessWidget {
-  final List<Map<String, dynamic>> columns; // [{label, prop, width?, fixed?}]
-  final List<Map<String, dynamic>> data; // data list
-  // Default row/header height; can be overridden per row via rowHeightBuilder
+class TableShow extends StatefulWidget {
+  final List<Map<String, dynamic>> columns;
+  final List<Map<String, dynamic>> data;
   final double rowHeight;
   final double headerHeight;
   final double defaultColumnWidth;
   final Color borderColor;
   final BorderRadiusGeometry borderRadius;
-  // New: customizable text styles
   final TextStyle? headerTextStyle;
   final TextStyle? cellTextStyle;
-  // New: per-row height control
   final double Function(int rowIndex, Map<String, dynamic> row)? rowHeightBuilder;
+  final int? total;
+  final int pageSize;
+  final int currentPage;
+  final ValueChanged<int>? onPageChange;
 
   const TableShow({
     super.key,
@@ -27,30 +28,65 @@ class TableShow extends StatelessWidget {
     this.headerTextStyle,
     this.cellTextStyle,
     this.rowHeightBuilder,
+    this.total,
+    this.pageSize = 10,
+    this.currentPage = 1,
+    this.onPageChange,
   });
 
   @override
+  State<TableShow> createState() => _TableShowState();
+}
+
+class _TableShowState extends State<TableShow> {
+  late int _currentPage;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPage = widget.currentPage;
+  }
+
+  @override
+  void didUpdateWidget(covariant TableShow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.onPageChange != null) {
+      _currentPage = widget.currentPage;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> fixedColumns = columns.where((c) => (c['fixed'] == true)).toList();
-    final List<Map<String, dynamic>> scrollColumns = columns.where((c) => (c['fixed'] != true)).toList();
+    final List<Map<String, dynamic>> fixedColumns = widget.columns.where((c) => (c['fixed'] == true)).toList();
+    final List<Map<String, dynamic>> scrollColumns = widget.columns.where((c) => (c['fixed'] != true)).toList();
+
+    final bool internalPaging = widget.total != null && widget.onPageChange == null;
+    final bool showPagination = widget.total != null && (widget.total! > widget.pageSize);
+    final List<Map<String, dynamic>> visibleData = internalPaging ? _sliceData(widget.data, _currentPage, widget.pageSize) : widget.data;
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: borderColor, width: 1),
-        borderRadius: borderRadius,
+        border: Border.all(color: widget.borderColor, width: 1),
+        borderRadius: widget.borderRadius,
         color: Colors.white,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (fixedColumns.isNotEmpty) _buildFixedColumns(fixedColumns),
-          Expanded(child: _buildScrollableTable(scrollColumns)),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (fixedColumns.isNotEmpty) _buildFixedColumns(fixedColumns, visibleData),
+              Expanded(child: _buildScrollableTable(scrollColumns, visibleData)),
+            ],
+          ),
+          if (showPagination) _buildPaginationBar(internalPaging),
         ],
       ),
     );
   }
 
-  Widget _buildFixedColumns(List<Map<String, dynamic>> fixedCols) {
+  Widget _buildFixedColumns(List<Map<String, dynamic>> fixedCols, List<Map<String, dynamic>> visibleData) {
     // Build column width map for Table
     final Map<int, TableColumnWidth> columnWidths = {};
     for (int i = 0; i < fixedCols.length; i++) {
@@ -58,19 +94,19 @@ class TableShow extends StatelessWidget {
       columnWidths[i] = FixedColumnWidth(width);
     }
 
-    final TextStyle headerStyle = headerTextStyle ?? const TextStyle(fontWeight: FontWeight.w600, fontSize: 14);
-    final TextStyle cellStyle = cellTextStyle ?? const TextStyle(fontSize: 14);
+    final TextStyle headerStyle = widget.headerTextStyle ?? const TextStyle(fontWeight: FontWeight.w600, fontSize: 14);
+    final TextStyle cellStyle = widget.cellTextStyle ?? const TextStyle(fontSize: 14);
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(topLeft: _extractRadius(borderRadius)?.topLeft ?? Radius.zero, bottomLeft: _extractRadius(borderRadius)?.bottomLeft ?? Radius.zero),
+        borderRadius: BorderRadius.only(topLeft: _extractRadius(widget.borderRadius)?.topLeft ?? Radius.zero, bottomLeft: _extractRadius(widget.borderRadius)?.bottomLeft ?? Radius.zero),
       ),
       child: Table(
         columnWidths: columnWidths,
         border: TableBorder(
-          right: BorderSide(color: borderColor, width: 1),
-          horizontalInside: BorderSide(color: borderColor, width: 1),
-          verticalInside: BorderSide(color: borderColor, width: 1),
+          right: BorderSide(color: widget.borderColor, width: 1),
+          horizontalInside: BorderSide(color: widget.borderColor, width: 1),
+          verticalInside: BorderSide(color: widget.borderColor, width: 1),
         ),
         defaultVerticalAlignment: TableCellVerticalAlignment.middle,
         children: [
@@ -79,7 +115,7 @@ class TableShow extends StatelessWidget {
             children: fixedCols
                 .map(
                   (c) => SizedBox(
-                    height: headerHeight,
+                    height: widget.headerHeight,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Align(
@@ -92,9 +128,9 @@ class TableShow extends StatelessWidget {
                 .toList(),
           ),
           // Data rows
-          ...List.generate(data.length, (rowIndex) {
-            final row = data[rowIndex];
-            final double rh = rowHeightBuilder?.call(rowIndex, row) ?? rowHeight;
+          ...List.generate(visibleData.length, (rowIndex) {
+            final row = visibleData[rowIndex];
+            final double rh = widget.rowHeightBuilder?.call(rowIndex, row) ?? widget.rowHeight;
             return TableRow(
               children: fixedCols
                   .map(
@@ -117,7 +153,7 @@ class TableShow extends StatelessWidget {
     );
   }
 
-  Widget _buildScrollableTable(List<Map<String, dynamic>> scrollCols) {
+  Widget _buildScrollableTable(List<Map<String, dynamic>> scrollCols, List<Map<String, dynamic>> visibleData) {
     if (scrollCols.isEmpty) {
       // If no scrollable columns, still render an empty area to align heights
       return const SizedBox.shrink();
@@ -130,16 +166,16 @@ class TableShow extends StatelessWidget {
       columnWidths[i] = FixedColumnWidth(width);
     }
 
-    final TextStyle headerStyle = headerTextStyle ?? const TextStyle(fontWeight: FontWeight.w600, fontSize: 14);
-    final TextStyle cellStyle = cellTextStyle ?? const TextStyle(fontSize: 14);
+    final TextStyle headerStyle = widget.headerTextStyle ?? const TextStyle(fontWeight: FontWeight.w600, fontSize: 14);
+    final TextStyle cellStyle = widget.cellTextStyle ?? const TextStyle(fontSize: 14);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Table(
         columnWidths: columnWidths,
         border: TableBorder(
-          horizontalInside: BorderSide(color: borderColor, width: 1),
-          verticalInside: BorderSide(color: borderColor, width: 1),
+          horizontalInside: BorderSide(color: widget.borderColor, width: 1),
+          verticalInside: BorderSide(color: widget.borderColor, width: 1),
         ),
         defaultVerticalAlignment: TableCellVerticalAlignment.middle,
         children: [
@@ -148,7 +184,7 @@ class TableShow extends StatelessWidget {
             children: scrollCols
                 .map(
                   (c) => SizedBox(
-                    height: headerHeight,
+                    height: widget.headerHeight,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Align(
@@ -161,9 +197,9 @@ class TableShow extends StatelessWidget {
                 .toList(),
           ),
           // Data rows
-          ...List.generate(data.length, (rowIndex) {
-            final row = data[rowIndex];
-            final double rh = rowHeightBuilder?.call(rowIndex, row) ?? rowHeight;
+          ...List.generate(visibleData.length, (rowIndex) {
+            final row = visibleData[rowIndex];
+            final double rh = widget.rowHeightBuilder?.call(rowIndex, row) ?? widget.rowHeight;
             return TableRow(
               children: scrollCols
                   .map(
@@ -189,7 +225,7 @@ class TableShow extends StatelessWidget {
   double _getWidth(Map<String, dynamic> col) {
     final dynamic w = col['width'];
     if (w is num) return w.toDouble();
-    return defaultColumnWidth;
+    return widget.defaultColumnWidth;
   }
 
   BorderRadius? _extractRadius(BorderRadiusGeometry radius) {
@@ -199,5 +235,67 @@ class TableShow extends StatelessWidget {
 
   Widget _buildCellText(dynamic value, {int? maxLines, TextStyle? style}) {
     return Text(value == null ? '' : value.toString(), maxLines: maxLines, overflow: TextOverflow.ellipsis, style: style);
+  }
+
+  Widget _buildPaginationBar(bool internalPaging) {
+    final int t = widget.total ?? 0;
+    final int ps = widget.pageSize;
+    final int cp = internalPaging ? _currentPage : widget.currentPage;
+    final int totalPages = ((t + ps - 1) ~/ ps);
+    final bool hasPrev = cp > 1;
+    final bool hasNext = cp < totalPages;
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: widget.borderColor, width: 1),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          Text('共 $t 条'),
+          const SizedBox(width: 12),
+          Text('第 $cp/$totalPages 页'),
+          const Spacer(),
+          TextButton(
+            onPressed: hasPrev
+                ? () {
+                    if (internalPaging) {
+                      setState(() {
+                        _currentPage = cp - 1;
+                      });
+                    } else {
+                      widget.onPageChange?.call(cp - 1);
+                    }
+                  }
+                : null,
+            child: const Text('上一页'),
+          ),
+          const SizedBox(width: 8),
+          TextButton(
+            onPressed: hasNext
+                ? () {
+                    if (internalPaging) {
+                      setState(() {
+                        _currentPage = cp + 1;
+                      });
+                    } else {
+                      widget.onPageChange?.call(cp + 1);
+                    }
+                  }
+                : null,
+            child: const Text('下一页'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Map<String, dynamic>> _sliceData(List<Map<String, dynamic>> source, int page, int size) {
+    final int start = (page - 1) * size;
+    final int end = start + size;
+    if (start >= source.length) return const [];
+    final int realEnd = end > source.length ? source.length : end;
+    return source.sublist(start, realEnd);
   }
 }
