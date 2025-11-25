@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_simple_ui/models/select_data.dart';
 import 'package:flutter_simple_ui/flutter_simple_ui.dart';
 import '../../api/user_api.dart';
 import '../../api/models/user.dart';
@@ -17,6 +16,10 @@ class _RemoteSearchDemoPageState extends State<RemoteSearchDemoPage> {
   SelectData<User>? selectedRealUser; // 真实API用户
   SelectData<User>? selectedAlwaysRefreshUser; // 总是刷新的用户
   SelectData<Hobby>? selectedHobby; // 真实API爱好
+
+  final DropdownChooseController realUserController = DropdownChooseController();
+  final DropdownChooseController hobbyController = DropdownChooseController();
+  final DropdownChooseController alwaysRefreshController = DropdownChooseController();
 
   // 真实API用户搜索
   Future<List<SelectData<User>>> _searchRealUsers(String keyword) async {
@@ -246,6 +249,13 @@ class _RemoteSearchDemoPageState extends State<RemoteSearchDemoPage> {
               remote: true,
               remoteSearch: _searchRealUsers,
               defaultValue: selectedRealUser,
+              controller: realUserController,
+              showClear: true,
+              onClear: () {
+                setState(() {
+                  selectedRealUser = null;
+                });
+              },
               onSingleChanged: (value, data, selectData) {
                 setState(() {
                   selectedRealUser = selectData;
@@ -253,11 +263,10 @@ class _RemoteSearchDemoPageState extends State<RemoteSearchDemoPage> {
               },
               tips: '请输入用户姓名搜索',
             ),
-            _buildResultCard(
-              '选中的用户',
-              selectedRealUser != null ? '${selectedRealUser!.data.name} - ${selectedRealUser!.data.school} - ${selectedRealUser!.data.age}岁' : '未选择',
-              Colors.teal,
+            Row(
+              children: [TextButton(onPressed: () => realUserController.clear(), child: const Text('清空'))],
             ),
+            _buildResultCard('选中的用户', selectedRealUser != null ? '${selectedRealUser!.data.name} - ${selectedRealUser!.data.school} - ${selectedRealUser!.data.age}岁' : '未选择', Colors.teal),
 
             const SizedBox(height: 24),
 
@@ -272,12 +281,22 @@ class _RemoteSearchDemoPageState extends State<RemoteSearchDemoPage> {
               onAdd: (val) => showAddHobbyDialog(context, initialName: val),
               remoteSearch: _searchHobbies,
               defaultValue: selectedHobby,
+              controller: hobbyController,
+              showClear: true,
+              onClear: () {
+                setState(() {
+                  selectedHobby = null;
+                });
+              },
               onSingleChanged: (value, data, selectData) {
                 setState(() {
                   selectedHobby = selectData;
                 });
               },
               tips: '请输入爱好关键字搜索',
+            ),
+            Row(
+              children: [TextButton(onPressed: () => hobbyController.clear(), child: const Text('清空'))],
             ),
             _buildResultCard('选中的爱好', selectedHobby != null ? selectedHobby!.data.name ?? '未命名' : '未选择', Colors.purple),
 
@@ -291,6 +310,13 @@ class _RemoteSearchDemoPageState extends State<RemoteSearchDemoPage> {
               alwaysRefresh: true, // 总是刷新数据
               remoteSearch: _searchRealUsers,
               defaultValue: selectedAlwaysRefreshUser,
+              controller: alwaysRefreshController,
+              showClear: true,
+              onClear: () {
+                setState(() {
+                  selectedAlwaysRefreshUser = null;
+                });
+              },
               onSingleChanged: (value, data, selectData) {
                 setState(() {
                   selectedAlwaysRefreshUser = selectData;
@@ -298,11 +324,12 @@ class _RemoteSearchDemoPageState extends State<RemoteSearchDemoPage> {
               },
               tips: '每次打开都会刷新数据',
             ),
+            Row(
+              children: [TextButton(onPressed: () => alwaysRefreshController.clear(), child: const Text('清空'))],
+            ),
             _buildResultCard(
               '选中的用户（总是刷新）',
-              selectedAlwaysRefreshUser != null
-                  ? '${selectedAlwaysRefreshUser!.data.name} - ${selectedAlwaysRefreshUser!.data.school} - ${selectedAlwaysRefreshUser!.data.age}岁'
-                  : '未选择',
+              selectedAlwaysRefreshUser != null ? '${selectedAlwaysRefreshUser!.data.name} - ${selectedAlwaysRefreshUser!.data.school} - ${selectedAlwaysRefreshUser!.data.age}岁' : '未选择',
               Colors.orange,
             ),
 

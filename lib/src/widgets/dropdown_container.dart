@@ -12,7 +12,25 @@ class DropdownContainer<T> extends StatefulWidget {
   final SelectData<T>? item;
   // 是否正在进行选择
   final bool isChoosing;
-  const DropdownContainer({super.key, this.multiple = false, this.tips = '请选择选项', this.items, this.item, this.isChoosing = false});
+  // 是否显示清除按钮
+  final bool showClear;
+  // 是否有选中项
+  final bool hasSelection;
+  // 点击清除按钮的回调
+  final Function? onClear;
+
+  const DropdownContainer({
+    super.key,
+    this.multiple = false,
+    // 默认提示词
+    this.tips = '请选择选项',
+    this.items,
+    this.item,
+    this.isChoosing = false,
+    this.onClear,
+    this.showClear = false,
+    this.hasSelection = false,
+  });
   @override
   State<DropdownContainer<T>> createState() => _DropdownContainerState<T>();
 }
@@ -66,11 +84,21 @@ class _DropdownContainerState<T> extends State<DropdownContainer<T>> {
                     overflow: TextOverflow.ellipsis,
                   ),
           ),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
-            child: Icon(widget.isChoosing ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right, color: Colors.grey[600], size: 20),
-          ),
+          if (!widget.hasSelection || !widget.showClear)
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
+              child: Icon(widget.isChoosing ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right, color: Colors.grey[600], size: 20),
+            ),
+          if (widget.hasSelection && widget.showClear)
+            InkWell(
+              onTap: () => widget.onClear?.call(),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
+                child: Icon(Icons.close, color: Colors.grey[600], size: 20),
+              ),
+            ),
         ],
       ),
     );

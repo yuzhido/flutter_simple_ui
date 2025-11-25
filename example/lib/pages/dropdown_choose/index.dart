@@ -71,6 +71,10 @@ class _DropdownChoosePageState extends State<DropdownChoosePage> {
   SelectData<UserModel>? complexSingleValue;
   List<SelectData<UserModel>> complexMultipleValues = [];
 
+  final DropdownChooseController basicSingleController = DropdownChooseController();
+  final DropdownChooseController basicMultipleController = DropdownChooseController();
+  final DropdownChooseController remoteSingleController = DropdownChooseController();
+
   @override
   void initState() {
     super.initState();
@@ -200,12 +204,22 @@ class _DropdownChoosePageState extends State<DropdownChoosePage> {
             DropdownChoose<String>(
               options: fruitOptions,
               defaultValue: basicSingleValue,
+              controller: basicSingleController,
+              showClear: true,
+              onClear: () {
+                setState(() {
+                  basicSingleValue = null;
+                });
+              },
               onSingleChanged: (value, data, selectData) {
                 setState(() {
                   basicSingleValue = selectData;
                 });
               },
               tips: '请选择水果',
+            ),
+            Row(
+              children: [TextButton(onPressed: () => basicSingleController.clear(), child: const Text('清空'))],
             ),
             _buildResultText('选中的值: ${basicSingleValue?.label ?? '无'}'),
             const SizedBox(height: 24),
@@ -216,12 +230,22 @@ class _DropdownChoosePageState extends State<DropdownChoosePage> {
               options: fruitOptions,
               multiple: true,
               defaultValue: basicMultipleValues,
+              controller: basicMultipleController,
+              showClear: true,
+              onClear: () {
+                setState(() {
+                  basicMultipleValues = [];
+                });
+              },
               onMultipleChanged: (values, datas, selectDatas) {
                 setState(() {
                   basicMultipleValues = selectDatas;
                 });
               },
               tips: '请选择水果（多选）',
+            ),
+            Row(
+              children: [TextButton(onPressed: () => basicMultipleController.clear(), child: const Text('清空'))],
             ),
             _buildResultText('选中的值: ${basicMultipleValues.map((e) => e.label).join(', ')}'),
             const SizedBox(height: 24),
@@ -265,12 +289,22 @@ class _DropdownChoosePageState extends State<DropdownChoosePage> {
               remote: true,
               remoteSearch: _remoteSearch,
               defaultValue: remoteSingleValue,
+              controller: remoteSingleController,
+              showClear: true,
+              onClear: () {
+                setState(() {
+                  remoteSingleValue = null;
+                });
+              },
               onSingleChanged: (value, data, selectData) {
                 setState(() {
                   remoteSingleValue = selectData;
                 });
               },
               tips: '请输入搜索关键词',
+            ),
+            Row(
+              children: [TextButton(onPressed: () => remoteSingleController.clear(), child: const Text('清空'))],
             ),
             _buildResultText('选中的值: ${remoteSingleValue?.label ?? '无'}'),
             const SizedBox(height: 24),

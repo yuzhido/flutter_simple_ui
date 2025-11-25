@@ -3,6 +3,21 @@ import 'package:flutter_simple_ui/models/select_data.dart';
 import 'package:flutter_simple_ui/src/dropdown_choose/widgets/choose_content.dart';
 import 'package:flutter_simple_ui/src/widgets/dropdown_container.dart';
 
+class DropdownChooseController {
+  VoidCallback? _clearAction;
+  void _bindClear(VoidCallback action) {
+    _clearAction = action;
+  }
+
+  void _unbind() {
+    _clearAction = null;
+  }
+
+  void clear() {
+    _clearAction?.call();
+  }
+}
+
 class DropdownChoose<T> extends StatefulWidget {
   // 是否可以过滤
   final bool filterable;
@@ -14,6 +29,7 @@ class DropdownChoose<T> extends StatefulWidget {
   final bool alwaysRefresh;
   // 是否显示新增按钮
   final bool showAdd;
+  final bool showClear;
   // 是否多选
   final bool multiple;
   // 新增回调
@@ -24,18 +40,22 @@ class DropdownChoose<T> extends StatefulWidget {
   final void Function(List<dynamic>, List<T>, List<SelectData<T>>)? onMultipleChanged;
   // 缓存更新回调 - 当远程搜索或其他操作更新缓存数据时调用
   final void Function(List<SelectData<T>>)? onCacheUpdate;
+  final VoidCallback? onClear;
   // 默认展示的数据
   final List<SelectData<T>> options;
   // 占位符文本
   final String tips;
   // 默认选中的数据 - 支持单个或多个
   final dynamic defaultValue; // SelectData<T> 或 List<SelectData<T>>
+  // 控制器
+  final DropdownChooseController? controller;
   const DropdownChoose({
     super.key,
     this.filterable = false,
     this.remote = false,
     this.alwaysRefresh = false,
     this.showAdd = false,
+    this.showClear = false,
     this.multiple = false,
     this.onAdd,
     this.onSingleChanged,
@@ -45,6 +65,8 @@ class DropdownChoose<T> extends StatefulWidget {
     this.defaultValue,
     this.tips = '',
     this.remoteSearch,
+    this.onClear,
+    this.controller,
   }) : assert(defaultValue == null || defaultValue is SelectData<T> || defaultValue is List<SelectData<T>>, 'defaultValue 必须是 null、SelectData<T> 或 List<SelectData<T>> 类型'),
        assert(!remote || remoteSearch != null, 'remote为 true 时必须提供 remoteSearch'),
        assert(!(filterable && remote), 'filterable 和 remote 不能同时为 true，请选择本地过滤或远程搜索其中一种模式');
@@ -68,6 +90,13 @@ class _DropdownChooseState<T> extends State<DropdownChoose<T>> {
     _initDefaultValue();
     // 初始化缓存数据（仅缓存外界传递的options）
     _initCachedOptions();
+    widget.controller?._bindClear(_clearSelection);
+  }
+
+  @override
+  void dispose() {
+    widget.controller?._unbind();
+    super.dispose();
   }
 
   // 初始化默认值
@@ -169,6 +198,19 @@ class _DropdownChooseState<T> extends State<DropdownChoose<T>> {
     }
   }
 
+  void _clearSelection() {
+    setState(() {
+      _selectedValue = null;
+      _selectedValues.clear();
+    });
+    if (widget.multiple) {
+      if (widget.onMultipleChanged != null) {
+        widget.onMultipleChanged!(const [], const [], const []);
+      }
+    }
+    widget.onClear?.call();
+  }
+
   // 更新缓存数据（由ChooseContent回调）
   void _updateCache(List<SelectData<T>> newData) {
     setState(() {
@@ -183,12 +225,14 @@ class _DropdownChooseState<T> extends State<DropdownChoose<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final bool hasSelection = widget.multiple ? _selectedValues.isNotEmpty : _selectedValue != null;
     return InkWell(
-      // 点击显示弹窗
       onTap: _showDialog,
       child: DropdownContainer(
-        // 是否正在选择
         isChoosing: isChoosing,
+        showClear: widget.showClear,
+        onClear: _clearSelection,
+        hasSelection: hasSelection,
         item: _selectedValue,
         items: _selectedValues,
         multiple: widget.multiple,
