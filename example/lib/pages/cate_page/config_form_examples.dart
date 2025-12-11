@@ -1,4 +1,5 @@
 import 'package:example/pages/config_form_example/index.dart';
+import 'package:example/pages/config_form_example/form_config_example.dart';
 import 'package:flutter/material.dart';
 
 class ConfigFormExamplesPage extends StatefulWidget {
@@ -25,6 +26,14 @@ class _ConfigFormExamplesPageState extends State<ConfigFormExamplesPage> {
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12)),
               child: const Text('基础配置示例'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const FormConfigExamplePage()));
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12)),
+              child: const Text('完整配置示例'),
             ),
             const SizedBox(height: 12),
 
