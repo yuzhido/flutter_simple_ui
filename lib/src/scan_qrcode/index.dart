@@ -47,6 +47,8 @@ class _ScanQrcodeState extends State<ScanQrcode> {
   late MobileScannerController controller;
   bool isFlashOn = false;
   bool isStarted = false;
+  // 标记是否正在处理一次识别结果，防止重复回调或重复跳转
+  bool _isHandling = false;
 
   @override
   void initState() {
@@ -55,10 +57,19 @@ class _ScanQrcodeState extends State<ScanQrcode> {
   }
 
   /// 二维码扫描回调
-  void _onDetect(BarcodeCapture capture) {
+  Future<void> _onDetect(BarcodeCapture capture) async {
+    if (_isHandling) return;
     final List<Barcode> barcodes = capture.barcodes;
     for (final barcode in barcodes) {
       if (barcode.rawValue != null) {
+        // 进入处理状态，立即停止相机并阻止后续回调
+        _isHandling = true;
+        try {
+          await controller.stop();
+        } catch (e) {
+          // 忽略停止异常，仍继续处理回调
+        }
+
         widget.onScanSuccess?.call(barcode.rawValue!);
         break;
       }
@@ -87,7 +98,13 @@ class _ScanQrcodeState extends State<ScanQrcode> {
         // 使用mobile_scanner分析选中的图片
         final result = await controller.analyzeImage(image.path);
         if (result != null && result.barcodes.isNotEmpty) {
-          // 如果找到二维码，调用回调
+          // 找到二维码：进入处理状态并停止相机，防止后续重复触发
+          _isHandling = true;
+          try {
+            await controller.stop();
+          } catch (e) {
+            // 忽略停止异常
+          }
           widget.onScanSuccess?.call(result.barcodes.first.rawValue ?? '');
         } else {
           // 如果没有找到二维码
