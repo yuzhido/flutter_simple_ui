@@ -107,6 +107,10 @@ class _ConfigFormExamplePageState extends State<ConfigFormExamplePage> {
           options: const [], // 初始为空，通过远程搜索获取
           remote: true, // 启用远程搜索
           remoteSearch: _searchUsers, // 使用我们定义的用户搜索方法
+          showClear: true, // 启用清除功能
+          onClear: () {
+            print('用户字段被清除，可以在这里处理级联逻辑');
+          },
           tips: '请输入用户姓名搜索',
         ),
       ),
@@ -126,6 +130,7 @@ class _ConfigFormExamplePageState extends State<ConfigFormExamplePage> {
           options: const [], // 初始为空，通过远程搜索获取
           remote: true, // 启用远程搜索
           remoteSearch: _searchHobbies, // 使用我们定义的爱好搜索方法
+          showClear: true, // 启用清除功能
           tips: '搜索爱好...',
         ),
       ),

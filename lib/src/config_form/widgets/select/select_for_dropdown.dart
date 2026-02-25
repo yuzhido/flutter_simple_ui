@@ -54,6 +54,19 @@ class _DropdownFieldContentState<T> extends State<SelectForDropdown<T>> {
                     alwaysRefresh: config.props?.alwaysRefresh,
                     tips: (config.props?.tips == '') ? '请选择${config.label}' : config.props?.tips,
                     defaultValue: defaultValue,
+                    showClear: config.props?.showClear ?? false,
+                    onClear: () {
+                      config.props?.onClear?.call();
+                      setState(() {
+                        if (config.props?.multiple == true) {
+                          defaultValue = [];
+                          widget.controller.setFieldValue(config.name, []);
+                        } else {
+                          defaultValue = null;
+                          widget.controller.setFieldValue(config.name, null);
+                        }
+                      });
+                    },
                     onSingleChanged: (value, data, selected) {
                       defaultValue = selected;
                       widget.controller.setFieldValue(config.name, value);

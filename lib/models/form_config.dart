@@ -143,6 +143,10 @@ class DropdownProps<T> {
   final Future<List<SelectData<T>>> Function(String)? remoteSearch;
   // 是否显示新增按钮
   final bool showAdd;
+  // 是否显示清除按钮
+  final bool showClear;
+  // 清除回调
+  final VoidCallback? onClear;
   // 新增回调
   final Future<bool?> Function(String)? onAdd;
   // 占位提示
@@ -160,6 +164,8 @@ class DropdownProps<T> {
     this.remote = false,
     this.remoteSearch,
     this.showAdd = false,
+    this.showClear = false,
+    this.onClear,
     this.onAdd,
     this.tips = '',
     this.onSingleChanged,

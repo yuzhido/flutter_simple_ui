@@ -7,7 +7,7 @@ class Config {
   /// - 'https://jsonplaceholder.typicode.com' (测试API)
   // static const String baseUrl = 'http://192.168.1.19:3000';
   // static const String baseUrl = 'http://192.168.8.188:3000';
-  static const String baseUrl = 'http://192.168.8.147:3000';
+  static const String baseUrl = 'http://192.168.8.75:3000';
   // static const String baseUrl = 'http://192.168.8.28:3000';
 
   /// 请求超时时间（毫秒）
