@@ -48,6 +48,7 @@ class _UploadForFileState extends State<UploadForFile> {
             Container(
               padding: const EdgeInsets.only(bottom: 18),
               child: FileUpload(
+                key: ValueKey('upload_${widget.config.name}'),
                 limit: props.maxFiles ?? -1,
                 fileListType: props.fileListType,
                 fileSource: props.fileSource,
@@ -70,7 +71,7 @@ class _UploadForFileState extends State<UploadForFile> {
                 },
                 onUploadFailed: (file, error) {
                   props.onUploadFailed?.call(file, error);
-                  print('文件上传失败: ${file.name}, 错误: $error');
+                  print('文件上传失败：${file.name}, 错误：$error');
                 },
               ),
             ),

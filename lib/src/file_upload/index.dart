@@ -327,8 +327,8 @@ class _FileUploadState extends State<FileUpload> {
           final isPending = index >= selectedFiles.length;
           final actualIndex = isPending ? index - selectedFiles.length : index;
 
-          // 为每个文件项创建唯一的Key，基于文件ID或路径
-          final uniqueKey = Key('file_${fileModel.fileInfo?.id ?? fileModel.path}_${fileModel.status.toString()}');
+          // 为每个文件项创建唯一的 Key，基于索引、文件 ID 或路径
+          final uniqueKey = Key('file_${index}_${fileModel.fileInfo?.id ?? fileModel.path}_${fileModel.status.toString()}');
 
           return GestureDetector(
             key: uniqueKey,
@@ -374,8 +374,8 @@ class _FileUploadState extends State<FileUpload> {
           final isPending = index >= selectedFiles.length;
           final actualIndex = isPending ? index - selectedFiles.length : index;
 
-          // 为每个文件项创建唯一的Key，基于文件ID或路径
-          final uniqueKey = Key('custom_file_${fileModel.fileInfo?.id ?? fileModel.path}_${fileModel.status.toString()}');
+          // 为每个文件项创建唯一的 Key，基于索引、文件 ID 或路径
+          final uniqueKey = Key('custom_file_${index}_${fileModel.fileInfo?.id ?? fileModel.path}_${fileModel.status.toString()}');
 
           return GestureDetector(
             key: uniqueKey,
@@ -402,8 +402,8 @@ class _FileUploadState extends State<FileUpload> {
           final isPending = index >= selectedFiles.length;
           final actualIndex = isPending ? index - selectedFiles.length : index;
 
-          // 为每个文件项创建唯一的Key，基于文件ID或路径
-          final uniqueKey = Key('text_file_${fileModel.fileInfo?.id ?? fileModel.path}_${fileModel.status.toString()}');
+          // 为每个文件项创建唯一的 Key，基于索引、文件 ID 或路径
+          final uniqueKey = Key('text_file_${index}_${fileModel.fileInfo?.id ?? fileModel.path}_${fileModel.status.toString()}');
 
           return GestureDetector(
             key: uniqueKey,

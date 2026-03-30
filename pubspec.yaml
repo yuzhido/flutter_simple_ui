@@ -1,13 +1,13 @@
 name: flutter_simple_ui
-description: "自定义简单 UI 组件"
-version: 1.2.4
-homepage: "https://github.com/yuzhido/flutter_simple_ui.git"
-repository: "https://github.com/yuzhido/flutter_simple_ui.git"
-issue_tracker: "https://github.com/yuzhido/flutter_simple_ui.git/issues"
+description: '自定义简单 UI 组件'
+version: 1.2.5
+homepage: 'https://github.com/yuzhido/flutter_simple_ui.git'
+repository: 'https://github.com/yuzhido/flutter_simple_ui.git'
+issue_tracker: 'https://github.com/yuzhido/flutter_simple_ui.git/issues'
 
 environment:
   sdk: ^3.8.0
-  flutter: ">=1.17.0"
+  flutter: '>=1.17.0'
 
 dependencies:
   dio: ^5.9.0
