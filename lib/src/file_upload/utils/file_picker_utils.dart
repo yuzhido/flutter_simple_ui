@@ -10,7 +10,7 @@ class FilePickerUtils {
   /// 选择文件
   static Future<void> pickFile({Function(FileUploadModel)? onFileSelected}) async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any, allowMultiple: false);
+      FilePickerResult? result = await FilePicker.pickFiles(type: FileType.any);
 
       if (result != null && result.files.isNotEmpty) {
         PlatformFile file = result.files.first;
