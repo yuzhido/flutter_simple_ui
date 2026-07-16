@@ -1,6 +1,6 @@
 name: flutter_simple_ui
 description: '自定义简单 UI 组件'
-version: 1.2.5
+version: 1.2.6
 homepage: 'https://github.com/yuzhido/flutter_simple_ui.git'
 repository: 'https://github.com/yuzhido/flutter_simple_ui.git'
 issue_tracker: 'https://github.com/yuzhido/flutter_simple_ui.git/issues'
@@ -17,7 +17,7 @@ dependencies:
   flutter_svg: ^2.2.0
   image_picker: ^1.1.2
   intl: ^0.20.2
-  mobile_scanner: ^7.0.1
+  mobile_scanner: 7.2.0
   permission_handler: ^12.0.1
 
 dev_dependencies:
