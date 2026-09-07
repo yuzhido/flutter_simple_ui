@@ -10,21 +10,20 @@ class FilePickerUtils {
   /// 选择文件
   static Future<void> pickFile({Function(FileUploadModel)? onFileSelected}) async {
     try {
-      FilePickerResult? result = await FilePicker.pickFiles(type: FileType.any);
+      final PlatformFile? file = await FilePicker.pickFile(type: FileType.any);
 
-      if (result != null && result.files.isNotEmpty) {
-        PlatformFile file = result.files.first;
-        if (file.path != null && file.name.isNotEmpty && onFileSelected != null) {
-          // 封装成FileUploadModel并调用回调
-          FileUploadModel fileUploadModel = createFileUploadModel(
-            fileName: file.name,
-            filePath: file.path!,
-            source: FileSource.file,
-            fileSize: file.size,
-            fileSizeInfo: formatFileSize(file.size),
-          );
-          onFileSelected(fileUploadModel);
-        }
+      if (file != null && file.path != null && file.name.isNotEmpty && onFileSelected != null) {
+        // 获取文件大小（lengthSync 可能返回 null，需回退到异步 length）
+        final int fileSize = file.lengthSync() ?? await file.length();
+        // 封装成FileUploadModel并调用回调
+        FileUploadModel fileUploadModel = createFileUploadModel(
+          fileName: file.name,
+          filePath: file.path!,
+          source: FileSource.file,
+          fileSize: fileSize,
+          fileSizeInfo: formatFileSize(fileSize),
+        );
+        onFileSelected(fileUploadModel);
       } else {
         debugPrint('⚠️ 用户取消了文件选择');
       }
